@@ -1,0 +1,23 @@
+.bandpower-plot {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  min-height: 400px;
+}
+
+.bandpower-plot-empty {
+  background: white;
+  border-radius: 8px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+  border: 2px dashed #ddd;
+  margin-bottom: 20px;
+}
+
+.bandpower-plot-empty p {
+  margin: 0;
+  font-size: 16px;
+}
