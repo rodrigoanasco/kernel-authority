@@ -13,6 +13,7 @@ export default function Navbar() {
       <div className="nav-right">
         <Link to="/" className={isActive("/")}>Home</Link>
         <Link to="/ingest" className={isActive("/ingest")}>Data Ingest</Link>
+        <Link to="/marketplace" className={isActive("/marketplace")}>Marketplace</Link>
       </div>
     </nav>
   );
