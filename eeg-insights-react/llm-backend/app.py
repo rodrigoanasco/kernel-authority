@@ -11,7 +11,7 @@ from rd_parser import (
 from gemini_analysis import analyze_eeg_with_gemini, get_simple_anomalies # pyright: ignore[reportMissingImports]
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=['http://localhost:5173', 'http://127.0.0.1:5173'])
 
 
 
@@ -41,37 +41,61 @@ def chat():
     analysis = data.get('analysis', '')
     bandpower = data.get('bandpower', {})
 
+    print(f"📥 Chat endpoint received: signal_len={len(signal)}, metadata={metadata.get('has_data', False)}, samples={metadata.get('samples', 0)}")
+
+    # If we have signal data, include statistics
+    signal_stats = ""
+    if signal and len(signal) > 0:
+        import numpy as np
+        signal_array = np.array(signal)
+        signal_stats = f"""
+**Signal Statistics:**
+- Total samples: {len(signal)}
+- Mean: {np.mean(signal_array):.2f}
+- Std Dev: {np.std(signal_array):.2f}
+- Min: {np.min(signal_array):.2f}
+- Max: {np.max(signal_array):.2f}
+- First 20 values: {signal[:20]}
+"""
+
     # Compose context for Gemini
     context = f"""
-You are an expert neuroscientist chatbot. The user is analyzing EEG data. Here is the context:
+You are an expert neuroscientist chatbot analyzing EEG (brain wave) data. 
 
 **Signal Metadata:**
 {json.dumps(metadata, indent=2)}
 
+{signal_stats}
+
 **Bandpower Analysis:**
-{json.dumps(bandpower, indent=2)}
+{json.dumps(bandpower, indent=2) if bandpower else "Not available"}
 
 **Statistical/AI Analysis:**
-{analysis}
+{analysis if analysis else "Not available"}
 
-**User's Question:**
+**User's Question/Request:**
 {user_message}
 
-If relevant, refer to the signal, bandpower, or metadata. If the user asks about a specific anomaly, window, or pattern, use the above context to answer. If the user asks for a summary, use the analysis and bandpower. Be concise and helpful.
+Based on the EEG data provided above, please provide a detailed analysis. Focus on:
+1. Signal characteristics and patterns
+2. Brain activity indicators
+3. Any anomalies or interesting features
+4. Clinical or research insights
+
+Be specific and reference the actual data values in your analysis. Provide actionable insights.
 """
 
     try:
-        from gemini_analysis import analyze_eeg_with_gemini
-        # Use Gemini to generate a reply (simulate as a single-turn LLM call)
-        # Here, we use the same function but you may want a dedicated chat function for multi-turn
-        # For now, just use the context as the prompt
         import google.generativeai as genai
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        print("🤖 Sending to Gemini...")
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
         response = model.generate_content(context)
         reply = response.text.strip()
+        print(f"✅ Gemini replied: {reply[:100]}...")
         return jsonify({'reply': reply})
     except Exception as e:
-        return jsonify({'reply': f"[Error: {str(e)}]"})
+        print(f"❌ Gemini error: {str(e)}")
+        return jsonify({'reply': f"Error: {str(e)}"})
 
 
 UPLOAD_FOLDER = 'uploads'
@@ -243,4 +267,4 @@ def get_channel():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)
