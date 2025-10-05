@@ -7,14 +7,22 @@ export default function FileUpload({ onFileSelect }) {
 
   const handleChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) onFileSelect(file);
+     if (file) {
+    onFileSelect(file);
+    // Reset so selecting the same file again re-triggers onChange
+    e.target.value = "";
+  }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragActive(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) onFileSelect(file);
+    if (file) {
+    onFileSelect(file);
+    //  Reset drag input for next drop of same file
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
   };
 
   const handleDrag = (e) => {
