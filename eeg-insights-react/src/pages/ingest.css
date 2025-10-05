@@ -1,0 +1,22 @@
+/* Reuse existing Home.css classes (home-container, background-video, hero-title, etc.)
+   Add a lightweight 2-column that still looks like the main branch */
+
+.content-two-col {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto; padding: 40px 20px;
+  display: grid; gap: 24px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.col.card-like {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px;
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 900px) {
+  .content-two-col { grid-template-columns: 1fr; }
+}
