@@ -1,67 +1,51 @@
-import { useState } from 'react';
-import CSVUpload from './components/CSVUpload';
-import EEGPlot from './components/EEGPlot';
-import BandpowerPlot from './components/BandpowerPlot';
-import AnalysisResults from './components/AnalysisResults';
-import { analyzeWindows } from './utils/eegAnalysis';
-import { generateMockExplanation } from './utils/mockLLM';
-import { exportToMarkdown, downloadMarkdownReport, exportToJSON, downloadJSONReport } from './utils/reportExport';
-import './App.css';
+import { useState } from 'react'
+import CSVUpload from './components/CSVUpload'
+import EEGPlot from './components/EEGPlot'
+import BandpowerPlot from './components/BandpowerPlot'
+import AnalysisResults from './components/AnalysisResults'
+import { analyzeWindows } from './utils/eegAnalysis'
+import { generateMockExplanation } from './utils/mockLLM'
+import { exportToMarkdown, downloadMarkdownReport, exportToJSON, downloadJSONReport } from './utils/reportExport'
+import AuthBox from './components/AuthBox'
+import ConsentForm from './components/ConsentForm'
+import './App.css'
 
 function App() {
-  const [eegData, setEegData] = useState(null);
-  const [analysisResults, setAnalysisResults] = useState(null);
-  const [llmExplanation, setLlmExplanation] = useState('');
-  const [metadata, setMetadata] = useState({});
-  const [windowSize, setWindowSize] = useState(256);
-  const [samplingRate, setSamplingRate] = useState(256);
+  const [eegData, setEegData] = useState(null)
+  const [analysisResults, setAnalysisResults] = useState(null)
+  const [llmExplanation, setLlmExplanation] = useState('')
+  const [metadata, setMetadata] = useState({})
+  const [windowSize, setWindowSize] = useState(256)
+  const [samplingRate, setSamplingRate] = useState(256)
 
   const handleDataLoaded = (data, fileMetadata) => {
-    setEegData(data);
-    setMetadata(fileMetadata);
-    
-    // Automatically run analysis
-    const results = analyzeWindows(data, windowSize, samplingRate);
-    setAnalysisResults(results);
-    
-    // Generate mock LLM explanation
-    const explanation = generateMockExplanation(results);
-    setLlmExplanation(explanation);
-  };
+    setEegData(data)
+    setMetadata(fileMetadata)
+    const results = analyzeWindows(data, windowSize, samplingRate)
+    setAnalysisResults(results)
+    setLlmExplanation(generateMockExplanation(results))
+  }
 
   const handleReanalyze = () => {
-    if (!eegData) return;
-    
-    const results = analyzeWindows(eegData, windowSize, samplingRate);
-    setAnalysisResults(results);
-    
-    const explanation = generateMockExplanation(results);
-    setLlmExplanation(explanation);
-  };
+    if (!eegData) return
+    const results = analyzeWindows(eegData, windowSize, samplingRate)
+    setAnalysisResults(results)
+    setLlmExplanation(generateMockExplanation(results))
+  }
 
   const handleExportMarkdown = () => {
-    if (!analysisResults) return;
-    
+    if (!analysisResults) return
     const markdown = exportToMarkdown(analysisResults, llmExplanation, {
-      ...metadata,
-      windowSize,
-      samplingRate
-    });
-    
-    downloadMarkdownReport(markdown, `eeg-report-${Date.now()}.md`);
-  };
+      ...metadata, windowSize, samplingRate
+    })
+    downloadMarkdownReport(markdown, `eeg-report-${Date.now()}.md`)
+  }
 
   const handleExportJSON = () => {
-    if (!analysisResults) return;
-    
-    const json = exportToJSON(analysisResults, {
-      ...metadata,
-      windowSize,
-      samplingRate
-    });
-    
-    downloadJSONReport(json, `eeg-data-${Date.now()}.json`);
-  };
+    if (!analysisResults) return
+    const json = exportToJSON(analysisResults, { ...metadata, windowSize, samplingRate })
+    downloadJSONReport(json, `eeg-data-${Date.now()}.json`)
+  }
 
   return (
     <div className="app">
@@ -71,6 +55,13 @@ function App() {
       </header>
 
       <main className="app-main">
+        {/* Auth + Consent */}
+        <section className="upload-section" style={{display:'grid', gap:24}}>
+          <AuthBox />
+          <ConsentForm />
+        </section>
+
+        {/* CSV → analysis UI you already had */}
         <section className="upload-section">
           <CSVUpload onDataLoaded={handleDataLoaded} />
         </section>
@@ -83,34 +74,16 @@ function App() {
                 <div className="controls-grid">
                   <div className="control-group">
                     <label htmlFor="window-size">Window Size (samples)</label>
-                    <input
-                      id="window-size"
-                      type="number"
-                      value={windowSize}
-                      onChange={(e) => setWindowSize(parseInt(e.target.value))}
-                      min="64"
-                      max="1024"
-                      step="64"
-                    />
+                    <input id="window-size" type="number" value={windowSize}
+                      onChange={(e)=>setWindowSize(parseInt(e.target.value))} min="64" max="1024" step="64" />
                   </div>
-                  
                   <div className="control-group">
                     <label htmlFor="sampling-rate">Sampling Rate (Hz)</label>
-                    <input
-                      id="sampling-rate"
-                      type="number"
-                      value={samplingRate}
-                      onChange={(e) => setSamplingRate(parseInt(e.target.value))}
-                      min="128"
-                      max="1000"
-                      step="1"
-                    />
+                    <input id="sampling-rate" type="number" value={samplingRate}
+                      onChange={(e)=>setSamplingRate(parseInt(e.target.value))} min="128" max="1000" step="1" />
                   </div>
-                  
                   <div className="control-group">
-                    <button className="btn btn-primary" onClick={handleReanalyze}>
-                      Re-analyze
-                    </button>
+                    <button className="btn btn-primary" onClick={handleReanalyze}>Re-analyze</button>
                   </div>
                 </div>
               </div>
@@ -127,22 +100,15 @@ function App() {
                 </section>
 
                 <section className="results-section">
-                  <AnalysisResults 
-                    analysisResults={analysisResults}
-                    llmExplanation={llmExplanation}
-                  />
+                  <AnalysisResults analysisResults={analysisResults} llmExplanation={llmExplanation} />
                 </section>
 
                 <section className="export-section">
                   <div className="export-panel">
                     <h3>Export Results</h3>
                     <div className="export-buttons">
-                      <button className="btn btn-secondary" onClick={handleExportMarkdown}>
-                        📄 Export as Markdown
-                      </button>
-                      <button className="btn btn-secondary" onClick={handleExportJSON}>
-                        📊 Export as JSON
-                      </button>
+                      <button className="btn btn-secondary" onClick={handleExportMarkdown}>📄 Export as Markdown</button>
+                      <button className="btn btn-secondary" onClick={handleExportJSON}>📊 Export as JSON</button>
                     </div>
                   </div>
                 </section>
@@ -156,7 +122,7 @@ function App() {
         <p>EEG Insights - Built with Vite, React, and Plotly.js</p>
       </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
