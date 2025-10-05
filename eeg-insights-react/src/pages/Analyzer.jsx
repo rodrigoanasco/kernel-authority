@@ -4,7 +4,7 @@ import EEGPlot from '../components/EEGPlot';
 import BandpowerPlot from '../components/BandpowerPlot';
 import AnalysisResults from '../components/AnalysisResults';
 import { analyzeWindows } from '../utils/eegAnalysis';
-import { generateMockExplanation } from '../utils/mockLLM';
+//import { generateMockExplanation } from '../utils/mockLLM';
 import {
   exportToMarkdown,
   downloadMarkdownReport,
