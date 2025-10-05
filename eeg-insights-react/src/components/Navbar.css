@@ -1,0 +1,12 @@
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.brand { color: #fff; font-weight: 700; text-decoration: none; }
+.nav-right { display: flex; gap: 16px; }
+.nav-link { color: #e5e7eb; text-decoration: none; }
+.nav-link:hover { color: #fff; }
+.nav-link.active { color: #fff; border-bottom: 2px solid #fff; }
