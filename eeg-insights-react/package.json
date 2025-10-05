@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
+    "jzip": "^1.0.0",
     "papaparse": "^5.5.3",
     "plotly.js": "^3.1.1",
     "react": "^19.1.1",

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS # pyright: ignore[reportMissingModuleSource]
 import os
+import json
 from werkzeug.utils import secure_filename
 from rd_parser import (
     parse_rd_file, 
@@ -11,6 +12,67 @@ from gemini_analysis import analyze_eeg_with_gemini, get_simple_anomalies # pyri
 
 app = Flask(__name__)
 CORS(app)
+
+
+
+# Add explicit CORS preflight handler for /chat
+from flask import make_response
+
+@app.route('/chat', methods=['POST', 'OPTIONS'])
+def chat():
+    if request.method == 'OPTIONS':
+        # CORS preflight
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Max-Age'] = '3600'
+        return response, 204
+
+    """
+    Chat endpoint for Gemini LLM with EEG context.
+    Expects JSON: { message: str, signal: [...], times: [...], metadata: {...}, analysis: str, bandpower: {...} }
+    """
+    data = request.json
+    user_message = data.get('message', '')
+    signal = data.get('signal', [])
+    times = data.get('times', [])
+    metadata = data.get('metadata', {})
+    analysis = data.get('analysis', '')
+    bandpower = data.get('bandpower', {})
+
+    # Compose context for Gemini
+    context = f"""
+You are an expert neuroscientist chatbot. The user is analyzing EEG data. Here is the context:
+
+**Signal Metadata:**
+{json.dumps(metadata, indent=2)}
+
+**Bandpower Analysis:**
+{json.dumps(bandpower, indent=2)}
+
+**Statistical/AI Analysis:**
+{analysis}
+
+**User's Question:**
+{user_message}
+
+If relevant, refer to the signal, bandpower, or metadata. If the user asks about a specific anomaly, window, or pattern, use the above context to answer. If the user asks for a summary, use the analysis and bandpower. Be concise and helpful.
+"""
+
+    try:
+        from gemini_analysis import analyze_eeg_with_gemini
+        # Use Gemini to generate a reply (simulate as a single-turn LLM call)
+        # Here, we use the same function but you may want a dedicated chat function for multi-turn
+        # For now, just use the context as the prompt
+        import google.generativeai as genai
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        response = model.generate_content(context)
+        reply = response.text.strip()
+        return jsonify({'reply': reply})
+    except Exception as e:
+        return jsonify({'reply': f"[Error: {str(e)}]"})
+
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'rd', 'edf'}  # Support both for now

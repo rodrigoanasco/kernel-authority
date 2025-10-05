@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ChatWidget from "../components/ChatWidget";
 import CSVUpload from "../components/CSVUpload";
 import EEGPlot from "../components/EEGPlot";
 import BandpowerPlot from "../components/BandpowerPlot";
@@ -229,6 +230,7 @@ function App() {
       <footer className="app-footer">
         <p>EEG Insights - Built with Vite, React, and Plotly.js</p>
       </footer>
+      <ChatWidget />
     </div>
   );
 }
