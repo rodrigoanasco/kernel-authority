@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import FileUpload from "../components/FileUpload";
 import EEGPlot from "../components/EEGPlot";
 import parseEEGFile from "../utils/parseEEGFile";
+import ChatWidget from "../components/ChatWidget";
+import parseEEGZip from "../utils/parseEEGZip";
 import "./Home.css";
 
 export default function Home() {
@@ -9,28 +11,41 @@ export default function Home() {
   const [file, setFile] = useState(null);
     const [plotData, setPlotData] = useState(null);  
   const [meta, setMeta] = useState(null);  
+const [loading, setLoading] = useState(false); 
 
-  const handleFileSelect = async (selectedFile) => {
+const handleFileSelect = async (selectedFile) => {
+    setLoading(true);        // show spinner immediately
+    setPlotData(null);       // clear old plot
+    setMeta(null);           // clear old metadata
     setFile(selectedFile);
     setShowUpload(false);
 
-     try {
-      console.log("Parsing EEG file:", selectedFile.name);
-      const result = await parseEEGFile(selectedFile);
-      setPlotData(result.traces);   // this holds the data for Plotly
-      setMeta(result);            // this holds meta info (channels, dtype, etc.)
+
+    try {
+        console.log("File selected:", selectedFile.name);
+        let result;
+        //  Detect ZIP file
+        if (selectedFile.name.toLowerCase().endsWith(".zip")) {
+            console.log("Detected ZIP file → parsing multiple EEGs...");
+            result = await parseEEGZip(selectedFile);
+        } else {
+                console.log("Detected single EEG file → parsing normally...");
+                result = await parseEEGFile(selectedFile);
+        }
+        setPlotData(result.traces); // this holds the data for Plotly
+        setMeta(result);               // this holds meta info (channels, dtype, etc.)
     } catch (err) {
-      console.error("EEG parse failed:", err);
-      alert("Error reading EEG file. Check console for details.");
+        console.error("EEG parse failed:", err);
+        alert("Error reading EEG file. Check console for details.");
+    } finally {
+        setLoading(false); // end buffer
+      // Smooth scroll to analysis area
+      setTimeout(() => {
+        document
+          .getElementById("analysis-section")
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
     }
-
-
-    // Smooth scroll to analysis area
-    setTimeout(() => {
-      document
-        .getElementById("analysis-section")
-        ?.scrollIntoView({ behavior: "smooth" });
-    }, 400);
   };
 
   return (
@@ -64,6 +79,13 @@ export default function Home() {
           </div>
         </div>
       )}
+        {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Analyzing EEG Data...</p>
+        </div>
+      )}
 
       {/*EEG Plot Section */}
       {plotData && (
@@ -75,6 +97,8 @@ export default function Home() {
           <EEGPlot traces={plotData} />  {/* passes real EEG data to graph */}
         </section>
       )}
+        <ChatWidget />
     </div>
+    
   );
 }
