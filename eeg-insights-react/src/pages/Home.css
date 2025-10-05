@@ -1,0 +1,173 @@
+/* 🏠 Entire container stays vertical scrollable */
+.home-container {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  color: white;
+  background: transparent;
+  position: relative;
+  z-index: 0;
+}
+
+/* 🎥 Background video (fixed across entire scroll) */
+.background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  filter: brightness(0.5) contrast(1.1);
+  pointer-events: none; /* allow clicks to pass through video */
+}
+
+/* 🌌 Hero section fills the first screen */
+.hero-section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+/* Hero text animation */
+.hero-text {
+  animation: fadeIn 1.5s ease-out forwards;
+}
+
+.hero-title {
+  font-size: 3rem;
+  color: #00d4ff;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 10px #00d4ff, 0 0 30px rgba(0, 212, 255, 0.4);
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  margin: 0.8rem 0 2rem;
+  color: #bdeeff;
+  font-family: 'Source Code Pro', monospace;
+}
+
+.file-btn {
+  padding: 0.8rem 2rem;
+  background: rgba(0, 200, 255, 0.2);
+  border: 1px solid rgba(0, 200, 255, 0.5);
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: 0.3s;
+}
+
+.file-btn:hover {
+  background: rgba(0, 200, 255, 0.35);
+  box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+  transform: scale(1.05);
+}
+
+/* 📊 Analysis section below */
+.analysis-section {
+  min-height: 100vh;
+  padding: 6rem 2rem;
+  text-align: center;
+  background: rgba(20, 20, 30, 0.75);
+  backdrop-filter: blur(10px);
+  margin-top: 2rem;
+  border-top: 1px solid rgba(0, 200, 255, 0.3);
+  animation: fadeInSection 1s ease-out forwards;
+}
+
+.section-title {
+  font-size: 2rem;
+  color: #00d4ff;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 10px #00d4ff;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInSection {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 📤 Modal popup (add this back!) */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background: rgba(30, 30, 30, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 320px;
+  color: white;
+  backdrop-filter: blur(8px);
+}
+
+.close-btn {
+  background: #444;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.close-btn:hover {
+  background: #666;
+}
+
+/* EEGParser section */
+.parser-container {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(0, 10, 30, 0.7);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  color: #bdeeff;
+}
+
+.parser-status {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #00d4ff;
+  text-shadow: 0 0 10px #00d4ff;
+}
+
+.parser-plot {
+  margin-top: 1.5rem;
+}
+

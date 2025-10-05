@@ -1,23 +1,42 @@
 .eeg-plot {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  min-height: 400px;
+  background: rgba(10, 10, 20, 0.6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 1000px;
+  backdrop-filter: blur(10px);
+  color: #bdeeff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.eeg-plot:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.25);
 }
 
 .eeg-plot-empty {
-  background: white;
-  border-radius: 8px;
+  background: rgba(10, 10, 20, 0.7);
+  border-radius: 10px;
   padding: 60px 20px;
   text-align: center;
-  color: #666;
-  border: 2px dashed #ddd;
-  margin-bottom: 20px;
+  color: #bdeeff;
+  border: 2px dashed rgba(0, 200, 255, 0.4);
+  margin: 2rem auto;
+  width: 80%;
+  max-width: 600px;
+  font-family: 'Source Code Pro', monospace;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.3s ease;
+}
+
+.eeg-plot-empty:hover {
+  border-color: #00d4ff;
 }
 
 .eeg-plot-empty p {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
+  color: #88d6ff;
 }

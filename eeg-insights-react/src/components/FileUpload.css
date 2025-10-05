@@ -1,0 +1,35 @@
+.upload-area {
+  border: 2px dashed rgba(0, 212, 255, 0.6);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: #bdeeff;
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-area.drag-active {
+  border-color: #00d4ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  transform: scale(1.02);
+}
+
+.upload-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  background: rgba(0, 200, 255, 0.2);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 200, 255, 0.4);
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background: rgba(0, 200, 255, 0.4);
+  transform: scale(1.05);
+}
