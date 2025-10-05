@@ -1,34 +1,37 @@
-import { useState } from 'react';
-import CSVUpload from '../components/CSVUpload';
-import EEGPlot from '../components/EEGPlot';
-import BandpowerPlot from '../components/BandpowerPlot';
-import AnalysisResults from '../components/AnalysisResults';
-import { analyzeWindows } from '../utils/eegAnalysis';
-import { generateMockExplanation } from '../utils/mockLLM';
+import { useState } from "react";
+import CSVUpload from "../components/CSVUpload";
+import EEGPlot from "../components/EEGPlot";
+import BandpowerPlot from "../components/BandpowerPlot";
+import AnalysisResults from "../components/AnalysisResults";
+import { analyzeWindows } from "../utils/eegAnalysis";
 import {
   exportToMarkdown,
   downloadMarkdownReport,
   exportToJSON,
   downloadJSONReport,
-} from '../utils/reportExport';
-import './Analyzer.css';
+} from "../utils/reportExport";
+import "./Analyzer.css";
 
 function App() {
   const [eegData, setEegData] = useState(null);
   const [analysisResults, setAnalysisResults] = useState(null);
-  const [llmExplanation, setLlmExplanation] = useState('');
+  const [llmExplanation, setLlmExplanation] = useState("");
   const [metadata, setMetadata] = useState({});
   const [windowSize, setWindowSize] = useState(256);
   const [samplingRate, setSamplingRate] = useState(256);
+  // AI Insights state
+  const [aiData, setAiData] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   const handleDataLoaded = (data, fileMetadata) => {
     setEegData(data);
     setMetadata(fileMetadata);
-    
+
     // Automatically run analysis
     const results = analyzeWindows(data, windowSize, samplingRate);
     setAnalysisResults(results);
-    
+
     // Generate mock LLM explanation
     const explanation = generateMockExplanation(results);
     setLlmExplanation(explanation);
@@ -36,37 +39,60 @@ function App() {
 
   const handleReanalyze = () => {
     if (!eegData) return;
-    
+
     const results = analyzeWindows(eegData, windowSize, samplingRate);
     setAnalysisResults(results);
-    
+
     const explanation = generateMockExplanation(results);
     setLlmExplanation(explanation);
   };
 
   const handleExportMarkdown = () => {
     if (!analysisResults) return;
-    
+
     const markdown = exportToMarkdown(analysisResults, llmExplanation, {
       ...metadata,
       windowSize,
-      samplingRate
+      samplingRate,
     });
-    
+
     downloadMarkdownReport(markdown, `eeg-report-${Date.now()}.md`);
   };
 
   const handleExportJSON = () => {
     if (!analysisResults) return;
-    
     const json = exportToJSON(analysisResults, {
       ...metadata,
       windowSize,
-      samplingRate
+      samplingRate,
     });
-    
     downloadJSONReport(json, `eeg-data-${Date.now()}.json`);
   };
+
+  // Handler for AI Insights (Gemini)
+  async function handleGetAIInsights() {
+    if (!eegData) return;
+    setAiLoading(true);
+    setAiError(null);
+    setAiData(null);
+    try {
+      const response = await fetch("http://localhost:5000/api/analyze-eeg", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          signal: eegData,
+          times: eegData.map((_, i) => i / samplingRate),
+          metadata,
+          use_ai: true,
+        }),
+      });
+      const data = await response.json();
+      setAiData(data);
+    } catch (err) {
+      setAiError("Failed to get AI insights");
+    }
+    setAiLoading(false);
+  }
 
   return (
     <div className="app">
@@ -98,22 +124,27 @@ function App() {
                       step="64"
                     />
                   </div>
-                  
+
                   <div className="control-group">
                     <label htmlFor="sampling-rate">Sampling Rate (Hz)</label>
                     <input
                       id="sampling-rate"
                       type="number"
                       value={samplingRate}
-                      onChange={(e) => setSamplingRate(parseInt(e.target.value))}
+                      onChange={(e) =>
+                        setSamplingRate(parseInt(e.target.value))
+                      }
                       min="128"
                       max="1000"
                       step="1"
                     />
                   </div>
-                  
+
                   <div className="control-group">
-                    <button className="btn btn-primary" onClick={handleReanalyze}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleReanalyze}
+                    >
                       Re-analyze
                     </button>
                   </div>
@@ -125,6 +156,38 @@ function App() {
               <EEGPlot data={eegData} title="Raw EEG Signal" />
             </section>
 
+            {/* AI Insights Button and Display */}
+            <section className="ai-section">
+              <button
+                className="btn btn-primary"
+                onClick={handleGetAIInsights}
+                disabled={aiLoading}
+              >
+                {aiLoading ? "Getting AI Insights..." : "Get AI Insights"}
+              </button>
+              {aiError && <div className="error">{aiError}</div>}
+              {aiData && aiData.success && (
+                <div className="ai-insights">
+                  <h3>🤖 AI-Generated Insights</h3>
+                  <p>
+                    <strong>Summary:</strong> {aiData.summary}
+                  </p>
+                  <p>
+                    <strong>Analysis:</strong> {aiData.analysis}
+                  </p>
+                  <h4>Anomalies</h4>
+                  <ul>
+                    {aiData.anomalies.map((a, i) => (
+                      <li key={i}>
+                        Time: {a.time}s, Index: {a.index}, Severity:{" "}
+                        {a.severity}, Desc: {a.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+
             {analysisResults && (
               <>
                 <section className="plot-section">
@@ -132,7 +195,7 @@ function App() {
                 </section>
 
                 <section className="results-section">
-                  <AnalysisResults 
+                  <AnalysisResults
                     analysisResults={analysisResults}
                     llmExplanation={llmExplanation}
                   />
@@ -142,10 +205,16 @@ function App() {
                   <div className="export-panel">
                     <h3>Export Results</h3>
                     <div className="export-buttons">
-                      <button className="btn btn-secondary" onClick={handleExportMarkdown}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleExportMarkdown}
+                      >
                         📄 Export as Markdown
                       </button>
-                      <button className="btn btn-secondary" onClick={handleExportJSON}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleExportJSON}
+                      >
                         📊 Export as JSON
                       </button>
                     </div>
@@ -163,7 +232,6 @@ function App() {
     </div>
   );
 }
-
 
 export default function Analyzer() {
   // (everything inside original App function goes here unchanged)
