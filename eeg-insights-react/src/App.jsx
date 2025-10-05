@@ -9,6 +9,8 @@ import { exportToMarkdown, downloadMarkdownReport, exportToJSON, downloadJSONRep
 import AuthBox from './components/AuthBox'
 import ConsentForm from './components/ConsentForm'
 import './App.css'
+import StreamUserData from './components/StreamUserData'
+
 
 function App() {
   const [eegData, setEegData] = useState(null)
@@ -117,6 +119,10 @@ function App() {
           </>
         )}
       </main>
+
+      <section className="upload-section" style={{ marginTop: 24 }}>
+        <StreamUserData />
+      </section>
 
       <footer className="app-footer">
         <p>EEG Insights - Built with Vite, React, and Plotly.js</p>
